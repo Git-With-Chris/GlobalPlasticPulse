@@ -32,7 +32,7 @@ There is a visual overload of information due to high number of observations tha
 - [GDP Data](https://ourworldindata.org/grapher/gross-domestic-product?time=2011) from Our World in Data
 - [Continents Data](https://ourworldindata.org/grapher/continents-according-to-our-world-in-data) from Our World in Data
 
-## Project Structure
+## Project Speifications
 
 ### Data Preparation
 
@@ -48,16 +48,46 @@ There is a visual overload of information due to high number of observations tha
 
 ### Finalization
 
-- Legend: Include a legend for clarity on color representation.
-- Readability Enhancement: Acknowledge the original visualization's strengths while proposing improvements for better readability.
-- GitHub Upload: Share the project on GitHub, including the README.md file for documentation.
+- Legend: Included a legend for clarity on color representation.
+- Readability Enhancement: Acknowledged the original visualization's strengths while proposing improvements for better readability.
 
 ## Usage Instructions
 
-1. **Data Import:** Ensure all necessary data files are in the specified directory.
-2. **Library Installation:** Install required R libraries using `install.packages("library_name")`.
-3. **Run Script:** Execute the R script to preprocess data and generate the visualization.
-4. **GitHub Upload:** Share the project on GitHub, including the README.md file for documentation.
+1. **Clone the Repository:**
+   ```bash
+   git clone https://github.com/Git-With-Chris/GlobalPlasticPulse.git
+   ```
+2. **Data Import:** Ensure all necessary data files are in the specified directory.
+3. **Library Installation:** Install required R libraries using `install.packages("library_name")`.
+4. **Run Script:** Execute the R script to preprocess data and generate the visualization.
+
+
+## Project Structure
+
+```plaintext
+
+.
+├── GlobalPlasticPulse.R
+├── README.md
+├── WebReport.Rmd
+├── WebReport.html
+├── data
+│   ├── 2010GDP.csv
+│   ├── continents-according-to-our-world-in-data.csv
+│   ├── newplastics.csv
+│   ├── world-administrative-boundaries
+│   │   ├── world-administrative-boundaries.dbf
+│   │   ├── world-administrative-boundaries.prj
+│   │   ├── world-administrative-boundaries.shp
+│   │   └── world-administrative-boundaries.shx
+│   └── ~$wplastics.csv
+└── images
+    ├── OriginalVisual.jpg
+    └── ReconstructedVisual.png
+
+4 directories, 14 files
+
+```
 
 ## Notes
 
