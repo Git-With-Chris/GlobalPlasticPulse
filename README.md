@@ -8,7 +8,7 @@ Link to detaled [RPubs Web Report](https://rpubs.com/ChrisJohn/1116784)
 
 ## Original Plot
 
-![Original Visualization](./images/'OriginalVisual')
+![Original Visualization](images/OriginalVisual.jpg)
 
 ## Identified Issues
 
@@ -20,6 +20,10 @@ A lot of data has been lost as the source document has a unconventional naming s
 
 ### 3. Perceptual Clarity
 There is a visual overload of information due to high number of observations that need to be addressed. The overlapping circles indicating the GDP cannot be easily perceived by the viewer and as the width of the observations decreases it is hard to compare observations make it hard to generate an actionable insight. The element coding such as text (bolded/unbolded), circle outline (bolded/unbolded) create a bombardment of visual elements to focus on for the viewer.
+
+## Recontructed Visualization
+
+![Recontructed Visualization](images/ReconstructedVisual.png)
 
 ## References
 
