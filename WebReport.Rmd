@@ -1,0 +1,204 @@
+---
+title: "Plastic & GDP Reconstruction"
+subtitle: "Deconstruct, Reconstruct Web Report"
+author: "Chris John"
+output: html_document
+urlcolor: blue
+---
+
+```{r setup, include=FALSE}
+# Do not change these settings!
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+### {.tabset} 
+
+Click the **Original**, **Code** and **Reconstruction** tabs to read about the issues and how they were fixed. 
+
+#### Original
+
+<br>
+<center>
+<img src="./images/Original Visual.jpg" width="100%">
+</center>
+<center>*Source: Plastic waste pollution data Visualization (Kettle, 2020)*</center>
+<br>
+
+**Objective**
+
+The objective of this data visualization is to create awareness around the amount of inadequately managed waste across all countries of the world, visualize this data and investigate its correlation with the corresponding Gross Domestic Product (GDP) of these countries. The target audience of this visualization are the governments of the world, waste management officials and general public citizens.    
+
+The visualization chosen had the following three main issues:
+
+* Failure to answer a practical question: The visualization infers that GDP is not a good indicator of the amount of plastics being produced this is because GDP is an indicator to the total economic output of a country not the current circumstances of the country. Therefore, it is better to compare based on a country's classification group. On doing so we can infer that countries in lower income group categories generally tend to have higher mismanaged waste.
+
+* Issues with data integrity: A lot of data has been lost as the source document has a unconventional naming system for countries (Eg: Faeroe Islands is misnamed as Faroe Islands), all such observations turn out to become NA values in this visual and it is very hard to identify these NA values (improper representation) in this plot (Sankey Diagram).
+
+* Perceptual Issue: There is a visual overload of information due to high number of observations that need to be addressed. The overlapping circles indicating the GDP cannot be easily perceived by the viewer and as the width of the observations decreases it is hard to compare observations make it hard to generate an actionable insight. The element coding such as text (bolded/unbolded), circle outline (bolded/unbolded) create a bombardment of visual elements to focus on for the viewer.
+
+**Reference**
+
+* Kettle, J. (2020, October 30). Plastic waste pollution data visualisation. Behance. Retrieved May 1, 2023, from https://www.behance.net/gallery/106936329/Plastic-Waste-Pollution-data-visualisation 
+
+#### Code
+
+The following code was used to fix the issues identified in the original visualization.
+
+```{r}
+# Importing Libraries here.
+library(tidyverse)
+library(psych)
+library(sf)
+library(leaflet)
+library(scales)
+
+# Import data into R environment.
+df_plastics_raw <- read_csv("./data/newplastics.csv")
+continents_data <- read_csv("./data/continents-according-to-our-world-in-data.csv")
+gdp_data <- read_csv("./data/2010GDP.csv")
+my_shapefile <- st_read("./data/world-administrative-boundaries/world-administrative-boundaries.shp")
+
+# Summarise structure of data 
+str(df_plastics_raw)
+
+# NA values are Notes written by Author. No other NA Values.
+which(!complete.cases(df_plastics_raw))
+
+# Remove NA values at the bottom of data set as they are Notes (10 rows) written by the Author.
+df_plastics <- df_plastics_raw %>% remove_missing()
+
+# Edits in Plastics dataframe. 
+df_plastics <- df_plastics %>% 
+  mutate(Country = gsub("8$", "", Country))
+
+df_plastics$`Mismanaged plastic waste [kg/person/day]7` <- df_plastics$`Mismanaged plastic waste [kg/person/day]7` %>% 
+  as.numeric()
+
+df_plastics$`Economic status1` <- factor(df_plastics$`Economic status1`, levels = c("LI", "LMI", "UMI", "HIC"),
+                                            ordered = TRUE)
+df_plastics <- df_plastics %>% mutate(`Economic status1` = case_when(
+  `Economic status1` == "LI" ~ "Lower Income",
+  `Economic status1` == "LMI" ~ "Lower Middle Income",
+  `Economic status1` == "UMI" ~ "Upper Middle Income",
+  `Economic status1` == "HIC" ~ "High Income",
+  TRUE ~ NA_character_
+))
+# Edits in Continent dataframe.
+names(continents_data)[1] <- "Country"
+
+# Data Preprocessing. 
+df_plastics$Country <- gsub("&", "and", df_plastics$Country)
+df_plastics$Country <- gsub("[[:punct:]]", "", df_plastics$Country)
+df_plastics$Country <- trimws(df_plastics$Country)
+df_plastics$Country <- gsub("BurmaMyanmar", "Myanmar", df_plastics$Country)
+
+continents_data$Country <- gsub("&", "and", continents_data$Country)
+continents_data$Country <- gsub("[[:punct:]]", "", continents_data$Country)
+continents_data$Country <- trimws(continents_data$Country)
+df_plastics <- df_plastics %>% filter(Country != "Dhekelia")
+
+old_names <- c("Congo Dem rep of", "Congo Rep of", "East Timor",
+               "Faroe Islands", "Korea North", "Korea South Republic of Korea",
+               "Micronesia", "Palestine Gaza Strip is only part on the coast",
+               "Saint Maarten DWI", "Saint Pierre", "Svalbard", "The Gambia",
+               "USVI")
+
+new_names <- c("Democratic Republic of Congo", "Congo", "Timor", "Faeroe Islands",
+               "North Korea", "South Korea", "Micronesia country", "Palestine",
+               "Saint Martin French part", "Saint Pierre and Miquelon",
+               "Svalbard and Jan Mayen", "Gambia", "United States Virgin Islands")
+
+df_plastics <- df_plastics %>%
+  mutate(Country = if_else(Country %in% old_names, new_names[match(Country, old_names)], Country))
+
+df_plastics <- merge(df_plastics, continents_data, all.x = TRUE)
+
+df_plastics <- df_plastics[, -which(names(df_plastics) == "Year")]
+df_plastics$Continent <- df_plastics$Continent %>% as.factor()
+
+# Edits in GDP data frame
+gdp_data <- gdp_data %>% filter(Year == 2010)
+
+# Final Data frame structure
+str(df_plastics)
+
+# Load world shape data
+
+my_shapefile <- my_shapefile %>% filter(!name %in% c("Azores Islands", "Gaza Strip")) %>% 
+  mutate(center = st_centroid(geometry))
+
+# Merge plastics data frame with world shape data.
+df_plastics <- merge(df_plastics, my_shapefile, by.x = "Code", by.y = "iso3", all.x = TRUE)
+
+# Merge plastics data frame with GDP data.
+df_plastics <- merge(df_plastics, gdp_data, by.x = "Code", by.y = "Code", all.x = TRUE)
+
+sf_plastics <- df_plastics %>% 
+  st_as_sf()
+
+pal <- colorNumeric(palette = "YlOrBr", domain = sf_plastics$`% Inadequately managed waste5`)
+pal2 <- colorNumeric(palette = "YlOrRd", domain = log(sf_plastics$`Plastic waste generation [kg/day]7`))
+
+# Prepare the text for tool tips:
+mytext <- paste(
+  "Country: ", sf_plastics$Country,"<br/>", 
+  "Waste Generated: ", comma(sf_plastics$`Plastic waste generation [kg/day]7`, big.mark = ","), " kg/day<br/>", 
+  "Mismanaged Waste: ", comma(sf_plastics$`Inadequately managed plastic waste [kg/day]7`, big.mark = ","), " kg/day<br/>",
+  "Mismanaged waste: ", sf_plastics$`% Inadequately managed waste5`, "%<br/>",
+  "Group: ", sf_plastics$`Economic status1`, "<br/>",
+  "GDP: ", comma(sf_plastics$`GDP (constant 2015 US$)`, big.mark = ","), "<br/>",  
+  sep="") %>%
+  lapply(htmltools::HTML)
+
+
+# Final Plot
+plastics_plot <- leaflet() %>% 
+  addProviderTiles(providers$CartoDB.Positron)  %>% 
+  addPolygons(
+    data = sf_plastics
+    , fillColor = ~pal(`% Inadequately managed waste5`)
+    , stroke=TRUE
+    , fillOpacity = 1
+    , color="white"
+    , weight=0.3
+    , label = mytext
+    , labelOptions = labelOptions( 
+      style = list("font-weight" = "normal", padding = "3px 8px"), 
+      textsize = "13px", 
+      direction = "auto"
+    ),
+    highlightOptions = highlightOptions(
+      weight = 1,
+      color = "black",
+      fillOpacity = 0.5,
+      bringToFront = TRUE
+    )
+  ) %>% 
+  addLegend("bottomleft", pal = pal, values = ~`% Inadequately managed waste5`,
+            title = "Mismanaged waste",
+            labFormat = labelFormat(suffix = "%"),
+            opacity = 1
+            , data = sf_plastics
+  ) 
+
+
+
+```
+
+**Data References**
+
+* Jambeck, J. R., Geyer, R., Wilcox, C., Siegler, T. R., Perryman, M., Andrady, A., Narayan, R., &amp; Law, K. L. (2015). Plastic waste inputs from land into the Ocean. Science, 347(6223), 768–771. https://doi.org/10.1126/science.1260352 
+
+* Gross domestic product (GDP). Our World in Data. (n.d.). Retrieved May 1, 2023, from https://ourworldindata.org/grapher/gross-domestic-product?time=2011 
+
+* Continents according to our world in Data. Our World in Data. (n.d.). Retrieved May 1, 2023, from https://ourworldindata.org/grapher/continents-according-to-our-world-in-data 
+
+
+#### Reconstruction
+
+The following plot fixes the main issues in the original.
+
+```{r fig.align="center", echo = FALSE, out.width = 910, out.height = 375}
+plastics_plot
+```
+
