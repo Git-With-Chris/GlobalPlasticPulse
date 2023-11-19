@@ -19,7 +19,7 @@ Click the **Original**, **Code** and **Reconstruction** tabs to read about the i
 
 <br>
 <center>
-<img src="./images/Original Visual.jpg" width="100%">
+<img src="./images/OriginalVisual.jpg" width="100%">
 </center>
 <center>*Source: Plastic waste pollution data Visualization (Kettle, 2020)*</center>
 <br>
