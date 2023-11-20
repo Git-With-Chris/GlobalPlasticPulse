@@ -4,7 +4,9 @@
 
 This project visualizes the global connection between plastic waste and Gross Domestic Product (GDP), aiming to raise awareness among governments, waste management officials, and the public. This project originated from the inspiration of a visualization found on Behance ([Original Visualization](https://www.behance.net/gallery/106936329/Plastic-Waste-Pollution-data-visualisation) by J. Kettle). While recognizing the original visualization's merit, I identified some areas for improvement to better align with the visualisation's objective.
 
-Link to detaled [RPubs Web Report](https://rpubs.com/ChrisJohn/1116784)
+## RPubs Link
+
+Link to detaled Web Report can be accessed [here](https://rpubs.com/ChrisJohn/1116784)
 
 ## Original Plot
 
